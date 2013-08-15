@@ -69,6 +69,11 @@ namespace TDDKata.StringCalculator.Tests
             Assert.That(ex.Message, Is.EqualTo("Negatives not allowed. There are negative numbers: -2, -5"));
         }
 
+        [Test]
+        public void Sum_NumbersBiggerThan1000Ignored_ReturnSumNumers()
+        {
+            Assert.AreEqual(2, calculator.Add("2, 1001"));
+        }
 
     }
 }

@@ -10,7 +10,7 @@ namespace TDDKata.StringCalculator
 {
     public class StringCalculator
     {
-        private IEnumerable<int> ConvertToIntArray(string[] stringsArray)
+        private IEnumerable<int> ConvertToIntArray(IEnumerable<string> stringsArray)
         {
             var result = new Collection<int>();
             foreach (var number in stringsArray)
@@ -35,6 +35,7 @@ namespace TDDKata.StringCalculator
                 numbers = numbers.Remove(0, 4);
             }
             var numbersArray = ConvertToIntArray(numbers.Split(delimiters.ToArray()));
+            numbersArray = numbersArray.Where(el => el < 1000);
             var negativeNumbers = numbersArray.Where(el => el < 0);
             if (negativeNumbers.Any())
             {
@@ -48,7 +49,7 @@ namespace TDDKata.StringCalculator
     {
         public NegativesNotAllowedException(IEnumerable<int> param)
         {
-            _message = string.Format("Negatives not allowed. There are negative numbers: {0}", 
+            _message = string.Format("Negatives not allowed. There are negative numbers: {0}",
                     string.Join(", ", param).TrimEnd());
         }
 
