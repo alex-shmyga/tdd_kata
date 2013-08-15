@@ -10,9 +10,9 @@ namespace TDDKata.StringCalculator
 {
     public class StringCalculator
     {
-        private int[] ConvertToIntArray(string[] stringsArray)
+        private IEnumerable<int> ConvertToIntArray(string[] stringsArray)
         {
-            IList<int> result = new List<int>();
+            var result = new Collection<int>();
             foreach (var number in stringsArray)
             {
                 result.Add(int.Parse(number));
@@ -21,20 +21,44 @@ namespace TDDKata.StringCalculator
         }
 
         public int Add(string numbers)
-        {         
+        {
             if (numbers == string.Empty)
             {
                 return 0;
             }
-            var pattern = @"\/\/.\n";            
-            var delimiters = new Collection<char>{',','\n'};
+            var pattern = @"\/\/.\n";
+            var delimiters = new Collection<char> { ',', '\n' };
             MatchCollection matches = Regex.Matches(numbers, pattern, RegexOptions.Singleline);
-            if (matches.Count > 0) {
+            if (matches.Count > 0)
+            {
                 delimiters.Add(matches[0].ToString()[2]);
                 numbers = numbers.Remove(0, 4);
             }
-            int[] numbersArray = ConvertToIntArray(numbers.Split(delimiters.ToArray()));
+            var numbersArray = ConvertToIntArray(numbers.Split(delimiters.ToArray()));
+            var negativeNumbers = numbersArray.Where(el => el < 0);
+            if (negativeNumbers.Any())
+            {
+                throw new NegativesNotAllowedException(negativeNumbers);
+            }
             return numbersArray.Sum();
+        }
+    }
+
+    public class NegativesNotAllowedException : Exception
+    {
+        public NegativesNotAllowedException(IEnumerable<int> param)
+        {
+            _message = string.Format("Negatives not allowed. There are negative numbers: {0}", 
+                    string.Join(", ", param).TrimEnd());
+        }
+
+        private readonly string _message;
+        public override string Message
+        {
+            get
+            {
+                return _message;
+            }
         }
     }
 }

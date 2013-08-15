@@ -13,7 +13,8 @@ namespace TDDKata.StringCalculator.Tests
         private StringCalculator calculator;
 
         [SetUp]
-        public void Init() {
+        public void Init()
+        {
             calculator = new StringCalculator();
         }
 
@@ -48,10 +49,10 @@ namespace TDDKata.StringCalculator.Tests
         }
 
         [Test]
-        [ExpectedException( typeof( FormatException ) )]
+        [ExpectedException(typeof(FormatException))]
         public void Sum_WrongInputNumbers_FormatExceptionThrown()
         {
-            Assert.AreEqual(6, calculator.Add(@"1, \ N" ));
+            Assert.AreEqual(6, calculator.Add(@"1, \ N"));
         }
 
         [Test]
@@ -60,6 +61,14 @@ namespace TDDKata.StringCalculator.Tests
             Assert.AreEqual(3, calculator.Add("//;\n1;2"));
         }
 
-        
+        [Test]
+        public void Sum_NegativeInputNumbers_NegativesNotAllowedExceptionThrown()
+        {
+            NegativesNotAllowedException ex =
+                Assert.Throws<NegativesNotAllowedException>(() => calculator.Add(@"1,-2,3,4,-5"));
+            Assert.That(ex.Message, Is.EqualTo("Negatives not allowed. There are negative numbers: -2, -5"));
+        }
+
+
     }
 }
