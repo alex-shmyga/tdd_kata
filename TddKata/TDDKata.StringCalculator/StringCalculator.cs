@@ -2,39 +2,57 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 
 namespace TDDKata.StringCalculator
 {
+
+    #region class: StringCalculator
+
     public class StringCalculator
     {
+
+        #region const: Private
+
+        private const string RegExPattern = @"\/\/\[?.+\]?\n";
+
+        #endregion
+
+        #region methods: Private
+
         private IEnumerable<int> ConvertToIntArray(IEnumerable<string> stringsArray)
         {
-            var result = new Collection<int>();
-            foreach (var number in stringsArray)
-            {
-                result.Add(int.Parse(number));
-            }
-            return result.ToArray();
+            return stringsArray.Select(int.Parse);
         }
 
         private IEnumerable<string> GetNumbersStringArrays(string numbers)
         {
-            var pattern = @"\/\/\[?.+\]?\n";
-            var delimiters = new Collection<string> { ",", "\n" };
-            MatchCollection matches = Regex.Matches(numbers, pattern, RegexOptions.Singleline);
-            if (matches.Count > 0)
+            var delimiters = GetDefDelimiters();
+            if (AddUserDelimiters(delimiters, numbers))
             {
-                string delimiter = GetDelimiter(matches[0]);
-                delimiters.Add(delimiter);
                 numbers = numbers.Remove(0, numbers.IndexOf("\n") + 1);
             }
             return numbers.Split(delimiters.ToArray(), StringSplitOptions.RemoveEmptyEntries);
         }
 
-        private string GetDelimiter(object match)
+        private ICollection<string> GetDefDelimiters()
+        {
+            return new Collection<string> { ",", "\n" };
+        }
+
+        private bool AddUserDelimiters(ICollection<string> delimiters, string numbers)
+        {
+            MatchCollection matches = Regex.Matches(numbers, RegExPattern, RegexOptions.Singleline);
+            if (matches.Count > 0)
+            {
+                var delimitersArray = GetDelimiters(matches[0]).Split(new[] { "][" }, StringSplitOptions.None);
+                delimitersArray.ToList().ForEach(delimiters.Add);
+                return true;
+            }
+            return false;
+        }
+
+        private string GetDelimiters(object match)
         {
             string delimiter = match.ToString().Remove(0, 2);
             delimiter = delimiter.Remove(delimiter.Length - 1, 1);
@@ -42,13 +60,23 @@ namespace TDDKata.StringCalculator
             return delimiter;
         }
 
-        private void CheckForNegativeNumbers(IEnumerable<int> numbers) {
+        private void CheckForNegativeNumbers(IEnumerable<int> numbers)
+        {
             IEnumerable<int> negativeNumbers = numbers.Where(el => el < 0);
             if (negativeNumbers.Any())
             {
                 throw new NegativesNotAllowedException(negativeNumbers);
             }
         }
+
+        private IEnumerable<int> GetIntNumbersWithoutBigNumbers(IEnumerable<int> intNumbersArray)
+        {
+            return intNumbersArray.Where(el => el < 1000);
+        }
+
+        #endregion
+
+        #region methods: Public 
 
         public int Add(string numbers)
         {
@@ -58,20 +86,21 @@ namespace TDDKata.StringCalculator
             }
             IEnumerable<string> stringNumbersArray = GetNumbersStringArrays(numbers);
             IEnumerable<int> intNumbersArray = ConvertToIntArray(stringNumbersArray);
-            intNumbersArray = intNumbersArray.Where(el => el < 1000);
+            intNumbersArray = GetIntNumbersWithoutBigNumbers(intNumbersArray);
             CheckForNegativeNumbers(intNumbersArray);
             return intNumbersArray.Sum();
         }
+
+        #endregion
     }
 
+    #endregion
+
+    #region class: NegativesNotAllowedException
 
     public class NegativesNotAllowedException : Exception
     {
-        public NegativesNotAllowedException(IEnumerable<int> param)
-        {
-            _message = string.Format("Negatives not allowed. There are negative numbers: {0}",
-                    string.Join(", ", param).TrimEnd());
-        }
+        #region properties: Public
 
         private readonly string _message;
         public override string Message
@@ -81,5 +110,19 @@ namespace TDDKata.StringCalculator
                 return _message;
             }
         }
+
+        #endregion
+
+        #region constructor:
+
+        public NegativesNotAllowedException(IEnumerable<int> param)
+        {
+            _message = string.Format("Negatives not allowed. There are negative numbers: {0}",
+                    string.Join(", ", param).TrimEnd());
+        }
+
+        #endregion
     }
+
+    #endregion
 }
