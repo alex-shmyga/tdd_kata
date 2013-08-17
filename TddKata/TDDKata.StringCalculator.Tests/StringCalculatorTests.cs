@@ -74,6 +74,11 @@ namespace TDDKata.StringCalculator.Tests
         {
             Assert.AreEqual(2, calculator.Add("2, 1001"));
         }
-
+        
+        [Test]
+        public void Sum_DelimitersCanBeOfAnyLength_ReturnSumNumers()
+        {
+            Assert.AreEqual(6, calculator.Add("//[***]\n1***2***3"));
+        }
     }
 }

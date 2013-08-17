@@ -20,30 +20,50 @@ namespace TDDKata.StringCalculator
             return result.ToArray();
         }
 
+        private IEnumerable<string> GetNumbersStringArrays(string numbers)
+        {
+            var pattern = @"\/\/\[?.+\]?\n";
+            var delimiters = new Collection<string> { ",", "\n" };
+            MatchCollection matches = Regex.Matches(numbers, pattern, RegexOptions.Singleline);
+            if (matches.Count > 0)
+            {
+                string delimiter = GetDelimiter(matches[0]);
+                delimiters.Add(delimiter);
+                numbers = numbers.Remove(0, numbers.IndexOf("\n") + 1);
+            }
+            return numbers.Split(delimiters.ToArray(), StringSplitOptions.RemoveEmptyEntries);
+        }
+
+        private string GetDelimiter(object match)
+        {
+            string delimiter = match.ToString().Remove(0, 2);
+            delimiter = delimiter.Remove(delimiter.Length - 1, 1);
+            delimiter = delimiter.Trim(new[] { '[', ']' });
+            return delimiter;
+        }
+
+        private void CheckForNegativeNumbers(IEnumerable<int> numbers) {
+            IEnumerable<int> negativeNumbers = numbers.Where(el => el < 0);
+            if (negativeNumbers.Any())
+            {
+                throw new NegativesNotAllowedException(negativeNumbers);
+            }
+        }
+
         public int Add(string numbers)
         {
             if (numbers == string.Empty)
             {
                 return 0;
             }
-            var pattern = @"\/\/.\n";
-            var delimiters = new Collection<char> { ',', '\n' };
-            MatchCollection matches = Regex.Matches(numbers, pattern, RegexOptions.Singleline);
-            if (matches.Count > 0)
-            {
-                delimiters.Add(matches[0].ToString()[2]);
-                numbers = numbers.Remove(0, 4);
-            }
-            var numbersArray = ConvertToIntArray(numbers.Split(delimiters.ToArray()));
-            numbersArray = numbersArray.Where(el => el < 1000);
-            var negativeNumbers = numbersArray.Where(el => el < 0);
-            if (negativeNumbers.Any())
-            {
-                throw new NegativesNotAllowedException(negativeNumbers);
-            }
-            return numbersArray.Sum();
+            IEnumerable<string> stringNumbersArray = GetNumbersStringArrays(numbers);
+            IEnumerable<int> intNumbersArray = ConvertToIntArray(stringNumbersArray);
+            intNumbersArray = intNumbersArray.Where(el => el < 1000);
+            CheckForNegativeNumbers(intNumbersArray);
+            return intNumbersArray.Sum();
         }
     }
+
 
     public class NegativesNotAllowedException : Exception
     {
