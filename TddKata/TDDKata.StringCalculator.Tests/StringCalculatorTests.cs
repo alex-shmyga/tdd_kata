@@ -82,5 +82,11 @@ namespace TDDKata.StringCalculator.Tests
         {
             Assert.AreEqual(6, calculator.Add("//[*][%]\n1*2%3"));
         }
+
+        [Test]
+        public void Add_MultiCharMultipleDelimiters_ReturnSumNumers()
+        {
+            Assert.AreEqual(6, calculator.Add("//[***][%]\n1***2%3"));
+        }
     }
 }
